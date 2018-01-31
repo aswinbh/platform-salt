@@ -151,3 +151,21 @@ zookeeper-systemctl_reload:
 zookeeper-ensure-service-running:
   cmd.run:
     - name: 'service zookeeper stop || echo already stopped; service zookeeper start'
+
+{% if 'EXPERIMENTAL' in salt['pillar.get']('features', []) %}
+{%- set internal_ip = salt['network.interface_ip'](pillar["mine_functions"]["network.ip_addrs"][0]) -%}
+{% set myid = 0 %}
+{%- for node in nodes -%}
+{%- if node.fqdn == salt['grains.get']('id') -%}
+{% set myid = node.id %}
+{%- endif -%}
+{%- endfor -%}
+zookeeper-consul-register:
+  file.managed:
+    - name: /etc/consul.d/zookeeper.json
+    - source: salt://zookeeper/files/templates/consul.json.tpl
+    - context:
+      myid: {{ myid }}
+      internal_ip: {{ internal_ip }}
+      
+{% endif %}
