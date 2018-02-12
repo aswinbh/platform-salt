@@ -20,6 +20,7 @@
 
 {% set historyserver_web_port = salt['grains.get']('flink:history_server_port',8082) %}
 {% set jobmanager_web_port = salt['grains.get']('flink:jobmanager_web_port',8083) %}
+{% set flink_hdfs_work_dir = '/user/' + pnda_user + '/flink/work' %}
 
 {% if grains['hadoop.distro'] == 'HDP' %}
 {% set hadoop_home_bin = '/usr/hdp/current/hadoop-client/bin/' %}
@@ -43,12 +44,13 @@ flink-dl-and-extract:
     - require:
       - file: flink-create_flink_version_directory
 
-flink-copy_configurations:
+flink-install_conf:
   file.managed:
     - name: {{ flink_real_dir }}/conf/flink-conf.yaml
     - source: salt://flink/templates/flink.conf.tpl
     - template: jinja
     - context:
+      node: 'localhost'
       jmnode: 'localhost'
       namenode: {{ namenode }}
       path: {{ archive_dir }}
