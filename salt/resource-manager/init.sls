@@ -1,7 +1,8 @@
 {% set resource_manager_path = pillar['resource_manager']['path'] %}
 {% set map_file = resource_manager_path + "policies/map.txt" %}
 {% set policy_file_link = resource_manager_path + pillar['resource_manager']['policy_file'] %}
-{% set execs = [ 'spark-submit', 'spark-shell', 'pyspark', 'mapred', 'hive', 'beeline' ] %} 
+{% set execs = [ 'spark-submit', 'spark-shell', 'pyspark', 'mapred', 'hive', 'beeline' ] %}
+{% set flink_execs = [ 'pyflink.sh', 'flink', 'start-scala-shell.sh' ] %}
 {% if grains['hadoop.distro'] == 'HDP' %}
 {% set map_file_source = 'capacity_scheduler_map.txt' %}
 {% else %}
@@ -92,3 +93,47 @@ resource-manager_spark_script_move:
     - makedirs: True
     - onlyif: 
       - test -x /usr/bin/spark-script-wrapper.sh
+
+resource-manager_flink_common_wrapper:
+  file.managed:
+    - name: {{ resource_manager_path }}/yarn-flink-common-wrapper.sh
+    - source: salt://resource-manager/templates/yarn-flink-common-wrapper.sh
+    - template: jinja
+    - defaults:
+        resource_manager_path: {{ resource_manager_path }}
+        policy_file_link: {{ policy_file_link }}
+        log_file: '/var/log/pnda/wrapper.log'
+    - mode: 755
+
+{% for exec in flink_execs%}
+resource-manager_{{ exec }}:
+   file.symlink:
+   - name: {{ resource_manager_path }}/{{ exec }} 
+   - target: {{ resource_manager_path }}/yarn-flink-common-wrapper.sh
+   - mode: 755
+
+resource-manager_{{ exec }}_move:
+  file.rename:
+    - name: /opt/pnda/rm-client/{{ exec }}
+    - source: /usr/bin/{{ exec }}
+    - makedirs: True
+    - unless:
+      - test -e /opt/pnda/rm-client/{{ exec }}
+
+resource-manager_{{ exec }}_orig:
+  alternatives.install:
+    - name: {{ exec }}
+    - link: /usr/bin/{{ exec }}
+    - path: /opt/pnda/rm-client/{{ exec }}
+    - priority: 10
+    - onlyif:
+      - test -x /opt/pnda/rm-client/{{ exec }}
+
+resource-manager_{{ exec }}_wrapper:
+  alternatives.install:
+    - name: {{ exec }}
+    - link: /usr/bin/{{ exec }}
+    - path: {{ resource_manager_path }}/{{ exec }}
+    - priority: 100
+
+{% endfor %}
