@@ -17,6 +17,10 @@ fi
 if [ $CLI == "hive" ] || [ $CLI == "beeline" ]; then
 #--hiveconf tez.queue.name=dev
   PROP=('--hiveconf' 'tez.queue.name')
+elif [ $CLI == "flink" ] || [ $CLI == "pyflink.sh" ]; then 
+  PROP=('-yqu' '')
+elif [ $CLI == "start-scala-shell.sh"]; then
+  PROP=('-qu' '')
 else
   PROP=('--queue' '')
 fi
@@ -46,6 +50,12 @@ do
         fi
       fi 
       ;;
+	--yarnqueue)
+	  if [ "X${PROP[1]}" == "X" ]; then
+	    REQUEST="$2"
+        shift 2
+      fi
+      ;;	  
     *)
       KEEP+=("$1")
       shift
@@ -68,7 +78,11 @@ if [ "X$QUEUE" != "X" ]; then
   else
     PROPVALUE=$QUEUE
   fi
-  KEEP=("${PROP[0]}" "$PROPVALUE" "${KEEP[@]}")
+  if [ $CLI == "flink" ] || [ $CLI == "pyflink.sh" ] || [ $CLI == "start-scala-shell.sh" ]; then
+     KEEP=("${KEEP[0]}"  "${PROP[0]}" "$PROPVALUE" "${KEEP[@]:1}")
+  else
+     KEEP=("${PROP[0]}" "$PROPVALUE" "${KEEP[@]}")
+  fi
 fi
 set -- "${KEEP[@]}"
 
