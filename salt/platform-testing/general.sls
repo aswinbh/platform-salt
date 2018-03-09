@@ -45,13 +45,13 @@
 {%- endif -%}
 
 {%- set fh_hosts = [] -%}
-{%- set fh_nodes = salt['pnda.ip_addresses']('flink') -%}
+{%- set fh_nodes = salt['pnda.get_hosts_for_role']('flink') -%}
 {%- if fh_nodes is not none and fh_nodes|length > 0 -%}
   {%- for ip in fh_nodes -%}
-    {%- if ip in dm_nodes -%}
-        {%- do fh_hosts.append("http://" + ip + ':' + flink_history_server_port) -%}
-    {%- endif -%}
+    {%- do fh_hosts.append("http://" + ip + ':' + flink_history_server_port) -%}
   {%- endfor -%}
+{%- endif -%}
+
 {%- endif -%}
 
 include:
