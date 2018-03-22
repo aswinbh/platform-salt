@@ -58,7 +58,7 @@ BLUEPRINT = r'''{
                     "timeline.metrics.host.aggregator.daily.checkpointCutOffMultiplier" : "2",
                     "timeline.metrics.service.resultset.fetchSize" : "2000",
                     "timeline.metrics.cluster.aggregator.hourly.ttl" : "31536000",
-                    "cluster.zookeeper.quorum" : "%(cluster_name)s-hadoop-mgr-1",
+                    "cluster.zookeeper.quorum" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
                     "timeline.metrics.downsampler.topn.function" : "max",
                     "timeline.metrics.host.aggregator.ttl" : "86400",
                     "phoenix.spool.directory" : "/tmp",
@@ -121,9 +121,7 @@ BLUEPRINT = r'''{
                     "spark_pid_dir" : "/var/run/spark",
                     "spark_daemon_memory" : "1024",
                     "spark_log_dir" : "/var/log/pnda/spark",
-{% raw %}
-                    "content" : "\n#!/usr/bin/env bash\n\n# This file is sourced when running various Spark programs.\n# Copy it as spark-env.sh and edit that to configure Spark for your site.\n\n# Options read in YARN client mode\n#SPARK_EXECUTOR_INSTANCES=\"2\" #Number of workers to start (Default: 2)\nSPARK_EXECUTOR_CORES=\"1\" #Number of cores for the workers (Default: 1).\nSPARK_EXECUTOR_MEMORY=\"512M\" #Memory per Worker (e.g. 1000M, 2G) (Default: 1G)\nSPARK_DRIVER_MEMORY=\"512M\" #Memory for Master (e.g. 1000M, 2G) (Default: 512 Mb)\n#SPARK_YARN_APP_NAME=\"spark\" #The name of your application (Default: Spark)\n#SPARK_YARN_QUEUE=\"~@~Xdefault~@~Y\" #The hadoop queue to use for allocation requests (Default: @~Xdefault~@~Y)\n#SPARK_YARN_DIST_FILES=\"\" #Comma separated list of files to be distributed with the job.\n#SPARK_YARN_DIST_ARCHIVES=\"\" #Comma separated list of archives to be distributed with the job.\n\n# Generic options for the daemons used in the standalone deploy mode\n\n# Alternate conf dir. (Default: ${SPARK_HOME}/conf)\nexport SPARK_CONF_DIR=${SPARK_CONF_DIR:-{{spark_home}}/conf}\n\n# Where log files are stored.(Default:${SPARK_HOME}/logs)\n#export SPARK_LOG_DIR=${SPARK_HOME:-{{spark_home}}}/logs\nexport SPARK_LOG_DIR={{spark_log_dir}}\n\n# Where the pid file is stored. (Default: /tmp)\nexport SPARK_PID_DIR={{spark_pid_dir}}\n\n# A string representing this instance of spark.(Default: $USER)\nSPARK_IDENT_STRING=$USER\n\n# The scheduling priority for daemons. (Default: 0)\nSPARK_NICENESS=0\n\nexport HADOOP_HOME=${HADOOP_HOME:-{{hadoop_home}}}\nexport HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-{{hadoop_conf_dir}}}\n\n# The java implementation to use.\nexport JAVA_HOME={{java_home}}\n\n#Memory for Master, Worker and history server (default: 1024MB)\nexport SPARK_DAEMON_MEMORY={{spark_daemon_memory}}m\n\nif [ -d \"/etc/tez/conf/\" ]; then\n  export TEZ_CONF_DIR=/etc/tez/conf\nelse\n  export TEZ_CONF_DIR=\nfi"
-{% endraw %}
+                    "content" : "\n#!/usr/bin/env bash\n\n# This file is sourced when running various Spark programs.\n# Copy it as spark-env.sh and edit that to configure Spark for your site.\n\n# Options read in YARN client mode\n#SPARK_EXECUTOR_INSTANCES=\"2\" #Number of workers to start (Default: 2)\nSPARK_EXECUTOR_CORES=\"1\" #Number of cores for the workers (Default: 1).\nSPARK_EXECUTOR_MEMORY=\"512M\" #Memory per Worker (e.g. 1000M, 2G) (Default: 1G)\nSPARK_DRIVER_MEMORY=\"512M\" #Memory for Master (e.g. 1000M, 2G) (Default: 512 Mb)\n#SPARK_YARN_APP_NAME=\"spark\" #The name of your application (Default: Spark)\n#SPARK_YARN_QUEUE=\"~@~Xdefault~@~Y\" #The hadoop queue to use for allocation requests (Default: @~Xdefault~@~Y)\n#SPARK_YARN_DIST_FILES=\"\" #Comma separated list of files to be distributed with the job.\n#SPARK_YARN_DIST_ARCHIVES=\"\" #Comma separated list of archives to be distributed with the job.\n\n# Generic options for the daemons used in the standalone deploy mode\n\n# Alternate conf dir. (Default: ${SPARK_HOME}/conf)\nexport SPARK_CONF_DIR=${SPARK_CONF_DIR:-{{ '{{' }}spark_home{{ '}}' }}/conf}\n\n# Where log files are stored.(Default:${SPARK_HOME}/logs)\n#export SPARK_LOG_DIR=${SPARK_HOME:-{{ '{{' }}spark_home{{ '}}' }}}/logs\nexport SPARK_LOG_DIR={{ '{{' }}spark_log_dir{{ '}}' }}\n\n# Where the pid file is stored. (Default: /tmp)\nexport SPARK_PID_DIR={{ '{{' }}spark_pid_dir{{ '}}' }}\n\n# A string representing this instance of spark.(Default: $USER)\nSPARK_IDENT_STRING=$USER\n\n# The scheduling priority for daemons. (Default: 0)\nSPARK_NICENESS=0\n\nexport HADOOP_HOME=${HADOOP_HOME:-{{ '{{' }}hadoop_home{{ '}}' }}}\nexport HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-{{ '{{' }}hadoop_conf_dir{{ '}}' }}}\n\n# The java implementation to use.\nexport JAVA_HOME={{ '{{' }}java_home{{ '}}' }}\n\n#Memory for Master, Worker and history server (default: 1024MB)\nexport SPARK_DAEMON_MEMORY={{ '{{' }}spark_daemon_memory{{ '}}' }}m\n\nif [ -d \"/etc/tez/conf/\" ]; then\n  export TEZ_CONF_DIR=/etc/tez/conf\nelse\n  export TEZ_CONF_DIR=\nfi\nexport PYSPARK_PYTHON=/opt/pnda/anaconda/bin/python\nexport PYTHONPATH={{ app_packages_dir }}/lib/python2.7/site-packages:$PYTHONPATH\n#"
                 }
             }
         },
@@ -144,9 +142,7 @@ BLUEPRINT = r'''{
                     "spark_thrift_cmd_opts" : "",
                     "spark_daemon_memory" : "1024",
                     "spark_log_dir" : "/var/log/pnda/spark2",
-{% raw %}
-                    "content" : "\n#!/usr/bin/env bash\n\n# This file is sourced when running various Spark programs.\n# Copy it as spark-env.sh and edit that to configure Spark for your site.\n\n# Options read in YARN client mode\n#SPARK_EXECUTOR_INSTANCES=\"2\" #Number of workers to start (Default: 2)\n#SPARK_EXECUTOR_CORES=\"1\" #Number of cores for the workers (Default: 1).\n#SPARK_EXECUTOR_MEMORY=\"1G\" #Memory per Worker (e.g. 1000M, 2G) (Default: 1G)\n#SPARK_DRIVER_MEMORY=\"512M\" #Memory for Master (e.g. 1000M, 2G) (Default: 512 Mb)\n#SPARK_YARN_APP_NAME=\"spark\" #The name of your application (Default: Spark)\n#SPARK_YARN_QUEUE=\"default\" #The hadoop queue to use for allocation requests (Default: default)\n#SPARK_YARN_DIST_FILES=\"\" #Comma separated list of files to be distributed with the job.\n#SPARK_YARN_DIST_ARCHIVES=\"\" #Comma separated list of archives to be distributed with the job.\n\n# Generic options for the daemons used in the standalone deploy mode\n\n# Alternate conf dir. (Default: ${SPARK_HOME}/conf)\nexport SPARK_CONF_DIR=${SPARK_CONF_DIR:-{{spark_home}}/conf}\n\n# Where log files are stored.(Default:${SPARK_HOME}/logs)\n#export SPARK_LOG_DIR=${SPARK_HOME:-{{spark_home}}}/logs\nexport SPARK_LOG_DIR={{spark_log_dir}}\n\n# Where the pid file is stored. (Default: /tmp)\nexport SPARK_PID_DIR={{spark_pid_dir}}\n\n#Memory for Master, Worker and history server (default: 1024MB)\nexport SPARK_DAEMON_MEMORY={{spark_daemon_memory}}m\n\n# A string representing this instance of spark.(Default: $USER)\nSPARK_IDENT_STRING=$USER\n\n# The scheduling priority for daemons. (Default: 0)\nSPARK_NICENESS=0\n\nexport HADOOP_HOME=${HADOOP_HOME:-{{hadoop_home}}}\nexport HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-{{hadoop_conf_dir}}}\n\n# The java implementation to use.\nexport JAVA_HOME={{java_home}}"
-{% endraw %}
+                    "content" : "\n#!/usr/bin/env bash\n\n# This file is sourced when running various Spark programs.\n# Copy it as spark-env.sh and edit that to configure Spark for your site.\n\n# Options read in YARN client mode\n#SPARK_EXECUTOR_INSTANCES=\"2\" #Number of workers to start (Default: 2)\n#SPARK_EXECUTOR_CORES=\"1\" #Number of cores for the workers (Default: 1).\n#SPARK_EXECUTOR_MEMORY=\"1G\" #Memory per Worker (e.g. 1000M, 2G) (Default: 1G)\n#SPARK_DRIVER_MEMORY=\"512M\" #Memory for Master (e.g. 1000M, 2G) (Default: 512 Mb)\n#SPARK_YARN_APP_NAME=\"spark\" #The name of your application (Default: Spark)\n#SPARK_YARN_QUEUE=\"default\" #The hadoop queue to use for allocation requests (Default: default)\n#SPARK_YARN_DIST_FILES=\"\" #Comma separated list of files to be distributed with the job.\n#SPARK_YARN_DIST_ARCHIVES=\"\" #Comma separated list of archives to be distributed with the job.\n\n# Generic options for the daemons used in the standalone deploy mode\n\n# Alternate conf dir. (Default: ${SPARK_HOME}/conf)\nexport SPARK_CONF_DIR=${SPARK_CONF_DIR:-{{ '{{' }}spark_home{{ '}}' }}/conf}\n\n# Where log files are stored.(Default:${SPARK_HOME}/logs)\n#export SPARK_LOG_DIR=${SPARK_HOME:-{{ '{{' }}spark_home{{ '}}' }}}/logs\nexport SPARK_LOG_DIR={{ '{{' }}spark_log_dir{{ '}}' }}\n\n# Where the pid file is stored. (Default: /tmp)\nexport SPARK_PID_DIR={{ '{{' }}spark_pid_dir{{ '}}' }}\n\n#Memory for Master, Worker and history server (default: 1024MB)\nexport SPARK_DAEMON_MEMORY={{ '{{' }}spark_daemon_memory{{ '}}' }}m\n\n# A string representing this instance of spark.(Default: $USER)\nSPARK_IDENT_STRING=$USER\n\n# The scheduling priority for daemons. (Default: 0)\nSPARK_NICENESS=0\n\nexport HADOOP_HOME=${HADOOP_HOME:-{{ '{{' }}hadoop_home{{ '}}' }}}\nexport HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-{{ '{{' }}hadoop_conf_dir{{ '}}' }}}\n\n# The java implementation to use.\nexport JAVA_HOME={{ '{{' }}java_home{{ '}}' }}\nexport PYSPARK_PYTHON=/opt/pnda/anaconda/bin/python\nexport PYTHONPATH={{ app_packages_dir }}/lib/python2.7/site-packages:$PYTHONPATH\n#"
                 }
             }
         },
@@ -187,7 +183,7 @@ BLUEPRINT = r'''{
                     "yarn.scheduler.capacity.resource-calculator" : "org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator",
                     "yarn.scheduler.capacity.root.accessible-node-labels" : "*",
                     "yarn.scheduler.capacity.root.acl_administer_queue" : "pnda",
-                    "yarn.scheduler.capacity.root.acl_submit_applications" : "pnda",
+                    "yarn.scheduler.capacity.root.acl_submit_applications" : " ",
                     "yarn.scheduler.capacity.root.applications.acl_administer_queue" : " ",
                     "yarn.scheduler.capacity.root.applications.acl_submit_applications" : " ",
                     "yarn.scheduler.capacity.root.applications.capacity" : "1",
@@ -220,7 +216,7 @@ BLUEPRINT = r'''{
                     "yarn.scheduler.capacity.root.applications.state" : "RUNNING",
                     "yarn.scheduler.capacity.root.capacity" : "100",
                     "yarn.scheduler.capacity.root.default.acl_administer_queue" : " ",
-                    "yarn.scheduler.capacity.root.default.acl_submit_applications" : " ",
+                    "yarn.scheduler.capacity.root.default.acl_submit_applications" : "pnda",
                     "yarn.scheduler.capacity.root.default.capacity" : "99",
                     "yarn.scheduler.capacity.root.default.maximum-applications" : "10000",
                     "yarn.scheduler.capacity.root.default.maximum-capacity" : "100",
@@ -278,7 +274,7 @@ BLUEPRINT = r'''{
                 "properties" : {
                     "oozie.service.JPAService.jdbc.password" : "oozie",
                     "oozie.service.JPAService.jdbc.username" : "oozie",
-                    "oozie.service.JPAService.jdbc.url" : "jdbc:mysql://%(cluster_name)s-hadoop-mgr-1/oozie",
+                    "oozie.service.JPAService.jdbc.url" : "jdbc:mysql://%(cluster_name)s-hadoop-mgr-1%(domain_name)s/oozie",
                     "oozie.service.JPAService.jdbc.driver" : "com.mysql.jdbc.Driver",
                     "oozie.authentication.type" : "simple",
                     "oozie.db.schema.name" : "oozie"
@@ -289,18 +285,18 @@ BLUEPRINT = r'''{
             "hive-env" : {
                 "properties" : {
                     "hive_ambari_database" : "MySQL",
-                    "hive_ambari_host" : "%(cluster_name)s-hadoop-mgr-1",
+                    "hive_ambari_host" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
                     "hive_database" : "MySQL Database",
                     "hive_database_name" : "hive",
                     "hive_database_type" : "mysql",
-                    "hive_existing_mssql_server_2_host" : "%(cluster_name)s-hadoop-mgr-1",
-                    "hive_existing_mssql_server_host" : "%(cluster_name)s-hadoop-mgr-1",
-                    "hive_existing_mysql_host" : "%(cluster_name)s-hadoop-mgr-1",
-                    "hive_hostname" : "%(cluster_name)s-hadoop-mgr-1",
+                    "hive_existing_mssql_server_2_host" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
+                    "hive_existing_mssql_server_host" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
+                    "hive_existing_mysql_host" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
+                    "hive_hostname" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
                     "hive_user" : "hive",
                     "javax.jdo.option.ConnectionDriverName" : "com.mysql.jdbc.Driver",
                     "javax.jdo.option.ConnectionPassword" : "hive",
-                    "javax.jdo.option.ConnectionURL" : "jdbc:mysql://%(cluster_name)s-hadoop-mgr-1/hive",
+                    "javax.jdo.option.ConnectionURL" : "jdbc:mysql://%(cluster_name)s-hadoop-mgr-1%(domain_name)s/hive",
                     "javax.jdo.option.ConnectionUserName" : "hive",
                     "hive_log_dir" : "/var/log/pnda/hive",
                     "hive.heapsize" : "512",
@@ -314,7 +310,7 @@ BLUEPRINT = r'''{
                 "properties" : {
                     "javax.jdo.option.ConnectionDriverName" : "com.mysql.jdbc.Driver",
                     "javax.jdo.option.ConnectionPassword" : "hive",
-                    "javax.jdo.option.ConnectionURL" : "jdbc:mysql://%(cluster_name)s-hadoop-mgr-1/hive?createDatabaseIfNotExist=true",
+                    "javax.jdo.option.ConnectionURL" : "jdbc:mysql://%(cluster_name)s-hadoop-mgr-1%(domain_name)s/hive?createDatabaseIfNotExist=true",
                     "javax.jdo.option.ConnectionUserName" : "hive"
                 }
             }
@@ -367,13 +363,13 @@ BLUEPRINT = r'''{
                     }
                 },
                 "properties" : {
-                    "fs.defaultFS" : "hdfs://%(cluster_name)s-hadoop-mgr-1:8020",
+                    "fs.defaultFS" : "hdfs://%(cluster_name)s-hadoop-mgr-1%(domain_name)s:8020",
                     "fs.trash.interval" : "360",
                     "ha.failover-controller.active-standby-elector.zk.op.retries" : "120",
                     "hadoop.http.authentication.simple.anonymous.allowed" : "true",
                     "hadoop.http.staticuser.user": "{{ pnda_user }}",
                     "hadoop.proxyuser.hcat.groups" : "users",
-                    "hadoop.proxyuser.hcat.hosts" : "%(cluster_name)s-hadoop-mgr-1",
+                    "hadoop.proxyuser.hcat.hosts" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
                     "hadoop.proxyuser.hdfs.groups" : "*",
                     "hadoop.proxyuser.hdfs.hosts" : "*",
                     "hadoop.proxyuser.hive.groups" : "*",
@@ -385,7 +381,7 @@ BLUEPRINT = r'''{
                     "hadoop.proxyuser.root.groups" : "*",
                     "hadoop.proxyuser.root.hosts" : "*",
                     "hadoop.proxyuser.oozie.groups" : "*",
-                    "hadoop.proxyuser.oozie.hosts" : "%(cluster_name)s-hadoop-mgr-1",
+                    "hadoop.proxyuser.oozie.hosts" : "%(cluster_name)s-hadoop-mgr-1%(domain_name)s",
                     "hadoop.security.auth_to_local" : "DEFAULT",
                     "hadoop.security.authentication" : "simple",
                     "hadoop.security.authorization" : "false",

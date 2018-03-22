@@ -116,6 +116,14 @@ orchestrate-pnda-install_spark_wrapper:
     - timeout: 120
     - queue: True
 
+orchestrate-pnda-install_flink:
+  salt.state:
+    - tgt: 'G@pnda_cluster:{{pnda_cluster}} and G@roles:flink'
+    - tgt_type: compound
+    - sls: flink
+    - timeout: 120
+    - queue: True
+
 orchestrate-pnda-install_gobblin:
   salt.state:
     - tgt: 'G@pnda_cluster:{{pnda_cluster}} and G@roles:gobblin'
@@ -240,7 +248,7 @@ orchestrate-pnda-install_hdp_hadoop_oozie_libs:
 
 orchestrate-pnda-app-packages:
   salt.state:
-    - tgt: 'G@pnda_cluster:{{pnda_cluster}} and ( G@hadoop:role:EDGE or G@roles:jupyter )'
+    - tgt: 'G@pnda_cluster:{{pnda_cluster}} and ( G@hadoop:role:EDGE or G@roles:jupyter or G@hadoop:role:DATANODE )'
     - tgt_type: compound
     - sls: app-packages
     - timeout: 120

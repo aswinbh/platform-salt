@@ -4,17 +4,11 @@
 {% set platformlib_package = 'platformlibs-' + platformlib_version + '-py2.7.egg' %}
 {% set cm_username = pillar['admin_login']['user'] %}
 {% set cm_password = pillar['admin_login']['password'] %}
-{% set cm_ip = salt['pnda.ip_addresses']('hadoop_manager')[0] %}
+{% set cm_ip = salt['pnda.get_hosts_for_role']('hadoop_manager')[0] %}
 {% set platformlibs_config_dir = '/etc/platformlibs' %}
 {% set pip_index_url = pillar['pip']['index_url'] %}
-
 {% set hadoop_distro = grains['hadoop.distro'] %}
-
-{% if grains['hadoop.distro'] == 'HDP' %}
 {% set anaconda_home = '/opt/pnda/anaconda' %}
-{% else %}
-{% set anaconda_home = '/opt/cloudera/parcels/Anaconda' %}
-{% endif %}
 
 include:
   - python-pip

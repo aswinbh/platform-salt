@@ -5,7 +5,7 @@
 {% set pnda_cluster = salt['pnda.cluster_name']() %}
 
 {%- set kafka_zookeepers = [] -%}
-{%- for ip in salt['pnda.kafka_zookeepers_ips']() -%}
+{%- for ip in salt['pnda.kafka_zookeepers_hosts']() -%}
 {%- do kafka_zookeepers.append(ip+':2181') -%}
 {%- endfor -%}
 
@@ -21,7 +21,8 @@
 {% set listeners = 'INGEST://'+ingest_ip+':'+ingest_port|string+',REPLICATION://'+internal_ip+':'+replication_port|string+',INTERNAL_PLAINTEXT://'+internal_ip+':'+internal_port|string %}
 {% set advertised_listeners = 'INGEST://'+ingest_ip+':'+ingest_port|string+',REPLICATION://'+internal_ip+':'+replication_port|string+',INTERNAL_PLAINTEXT://'+internal_ip+':'+internal_port|string %}
 
-{% set offsets_topic_replication_factor  = salt['pnda.kafka_brokers_ips']()|length -%}
+{% set offsets_topic_replication_factor  = salt['pnda.kafka_brokers_hosts']()|length -%}
+{% set kafka_log_level = salt['pillar.get']('kafka:log_level', 'INFO') %}
 
 include:
   - kafka
@@ -53,6 +54,17 @@ kafka-server-conf:
       advertised_listeners: {{ advertised_listeners }}
       inter_broker_listener: {{ inter_broker_listener }}
       offsets_topic_replication_factor: {{ offsets_topic_replication_factor }}
+
+kafka-server-log-conf:
+  file.managed:
+    - name: {{ kafka.real_home }}/config/log4j.properties
+    - source: salt://kafka/templates/log4j.properties.tpl
+    - user: kafka
+    - group: kafka
+    - mode: 644
+    - template: jinja
+    - context:
+      kafka_log_level: {{ kafka_log_level }}
 
 {% if grains['os'] == 'Ubuntu' %}
 kafka-copy_kafka_service:

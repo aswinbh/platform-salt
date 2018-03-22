@@ -1,5 +1,8 @@
 {% set flavor_cfg = pillar['pnda_flavor']['states'][sls] %}
 
+{% set pnda_home = pillar['pnda']['homedir'] %}
+{% set app_packages_dir = pnda_home + "/app-packages" %}
+
 {% set scripts_location = '/tmp/pnda-install/' + sls %}
 {% set pnda_cluster = salt['pnda.cluster_name']() %}
 {% set hdp_p = salt['pillar.get']('hdp', {}) %}
@@ -9,10 +12,10 @@
 {% set keystone_tenant = salt['pillar.get']('keystone.tenant', "") %}
 {% set keystone_auth_url = salt['pillar.get']('keystone.auth_url', "") + '/tokens' %}
 {% set region = salt['pillar.get']('keystone.region_name', "") %}
-{% set mysql_host = salt['pnda.ip_addresses']('oozie_database')[0] %}
+{% set mysql_host = salt['pnda.get_hosts_for_role']('oozie_database')[0] %}
 {% set aws_key = salt['pillar.get']('aws.archive_key', '') %}
 {% set aws_secret_key = salt['pillar.get']('aws.archive_secret', '') %}
-{% set pnda_graphite_host = salt['pnda.ip_addresses']('graphite')[0] %}
+{% set pnda_graphite_host = salt['pnda.get_hosts_for_role']('graphite')[0] %}
 {% set pnda_user = pillar['pnda']['user'] %}
 
 {% set pip_index_url = pillar['pip']['index_url'] %}
@@ -76,6 +79,7 @@ hdp-copy_flavor_config:
       data_volumes: {{ data_volumes }}
       pnda_user: {{ pnda_user }}
       pnda_graphite_host: {{ pnda_graphite_host }}
+      app_packages_dir: {{ app_packages_dir }}
 
 hdp-execute_hdp_installation_script:
   cmd.run:

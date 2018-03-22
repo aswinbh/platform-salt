@@ -3,19 +3,19 @@
 {%- set hadoop_distro = grains['hadoop.distro'] -%}
 
 {%- set kafka_brokers = [] -%}
-{%- for ip in salt['pnda.kafka_brokers_ips']() -%}
+{%- for ip in salt['pnda.kafka_brokers_hosts']() -%}
 {%- do kafka_brokers.append(ip+':9092') -%}
 {%- endfor -%}
 
 {%- set kafka_zookeepers = [] -%}
-{%- for ip in salt['pnda.kafka_zookeepers_ips']() -%}
+{%- for ip in salt['pnda.kafka_zookeepers_hosts']() -%}
 {%- do kafka_zookeepers.append(ip+':2181') -%}
 {%- endfor -%}
 
 {% set km_port = salt['pillar.get']('kafkamanager:bind_port', 10900) %}
 
 {%- set opentsdb_port = salt['pillar.get']('opentsdb:bind_port', 4242) -%}
-{%- set opentsdb_nodes = salt['pnda.ip_addresses']('opentsdb') -%}
+{%- set opentsdb_nodes = salt['pnda.get_hosts_for_role']('opentsdb') -%}
 {%- set opentsdb_host = '' -%}
 {%- if opentsdb_nodes is not none and opentsdb_nodes|length > 0 -%}
     {%- set opentsdb_host = opentsdb_nodes[0]+':'+opentsdb_port|string -%}
@@ -25,7 +25,11 @@
 
 {% set km_link = salt['pnda.generate_http_link']('kafka_manager',':'+km_port|string+'/clusters/'+pnda_cluster) %}
 
-{%- set jupyter_nodes = salt['pnda.ip_addresses']('jupyter') -%}
+{%- set flink_history_server_port = salt['pillar.get']('flink:history_server_port', 8082) -%}
+{%- set fh_nodes = salt['pnda.get_hosts_for_role']('flink') -%}
+{%- set flink_history_server = fh_nodes[0]+':'+flink_history_server_port|string -%}
+
+{%- set jupyter_nodes = salt['pnda.get_hosts_for_role']('jupyter') -%}
 {%- set jupyter_host = '' -%}
 {%- if jupyter_nodes is not none and jupyter_nodes|length > 0 -%}
     {%- set jupyter_host = jupyter_nodes[0] -%}
@@ -57,6 +61,7 @@
         "hadoop_manager_password" : "{{ cm_password }}",
         "cluster_root_user" : "{{ os_user }}",
         "cluster_private_key" : "{{ keys_directory }}/dm.pem",
+        "flink_history_server": "{{ flink_history_server }}",
         "kafka_zookeeper" : "{{ kafka_zookeepers|join(',') }}",
         "kafka_brokers" : "{{ kafka_brokers|join(',') }}",
         "opentsdb" : "{{ opentsdb_host }}",
